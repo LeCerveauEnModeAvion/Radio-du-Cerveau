@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Ma radio en ligne</title>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+  #info { font-size: 1.2em; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h1>Écoutez ma radio</h1>
+<audio id="audio" controls autoplay>
+    <source src="http://82.66.14.236:8000/stream" type="audio/mpeg">
+    Votre navigateur ne supporte pas la lecture audio.
+</audio>
+
+<div id="info">Titre et artiste...</div>
+
+<script>
+const infoDiv = document.getElementById('info');
+
+// URL du status JSON de Icecast
+const statusUrl = 'http://82.66.14.236:8000/status-json.xsl';
+
+async function updateMetadata() {
+    try {
+        const res = await fetch(statusUrl);
+        const data = await res.json();
+
+        let current;
+        if (Array.isArray(data.icestats.source)) {
+            current = data.icestats.source[0];
+        } else {
+            current = data.icestats.source;
+        }
+
+        if (current && current.title) {
+            infoDiv.textContent = current.title;
+        } else {
+            infoDiv.textContent = "Titre inconnu";
+        }
+    } catch (err) {
+        infoDiv.textContent = "Impossible de récupérer les métadonnées";
+        console.error(err);
+    }
+}
+
+// Met à jour toutes les 5 secondes
+setInterval(updateMetadata, 5000);
+updateMetadata();
+</script>
+
+</body>
+</html>
+
